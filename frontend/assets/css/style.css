@@ -20,8 +20,15 @@ h1, h2, h3, .font-display {
   font-family: 'Sora', 'Inter', system-ui, sans-serif;
 }
 
-/* tabular figures for money, so amounts line up in lists */
+
 .tnum { font-variant-numeric: tabular-nums; }
+
+
+input[type="date"] {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
 
 /* searchable dropdown, matches the original Apps Script dialog pattern */
 .dropdown-wrap { position: relative; }
