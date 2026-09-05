@@ -300,9 +300,18 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <form id="editForm" class="space-y-4">
-        <input type="hidden" id="e_marketer">
-        <input type="hidden" id="e_rowRef">
+    
+<form id="editForm" class="space-y-4">
+  <input type="hidden" id="e_currentMarketer">
+  <input type="hidden" id="e_rowRef">
+  <div>
+    <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Marketer's name</label>
+    <div class="dropdown-wrap">
+      <input id="e_marketer" type="text" autocomplete="off" placeholder="Select marketer..."
+        class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+      <div class="dropdown-list" id="e_marketer_list"></div>
+    </div>
+  </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Date</label>

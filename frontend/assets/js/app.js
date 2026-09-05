@@ -279,7 +279,9 @@ $('entryForm').addEventListener('submit', async (e) => {
 // -----------------------------------------------------------------------
 // History panel
 // -----------------------------------------------------------------------
+
 setupDropdown($('h_marketer'), $('h_marketer_list'), () => ['ALL', ...STATE.marketers]);
+setupDropdown($('e_marketer'), $('e_marketer_list'), () => STATE.marketers);
 
 $('h_search').addEventListener('click', loadHistory);
 
@@ -342,7 +344,9 @@ function escapeHtml(str) {
 // -----------------------------------------------------------------------
 // Edit modal
 // -----------------------------------------------------------------------
+
 function openEditModal(r) {
+  $('e_currentMarketer').value = r.marketer;
   $('e_marketer').value = r.marketer;
   $('e_rowRef').value = r.rowRef;
   $('e_date').value = r.date;
@@ -362,9 +366,9 @@ $('editForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const banner = $('editBanner');
   hideBanner(banner);
-
   const payload = {
-    marketer: $('e_marketer').value,
+    currentMarketer: $('e_currentMarketer').value,
+    marketer: $('e_marketer').value.trim(),
     rowRef: $('e_rowRef').value,
     date: $('e_date').value,
     source: $('e_source').value.trim(),
@@ -373,6 +377,11 @@ $('editForm').addEventListener('submit', async (e) => {
     amount: $('e_amount').value,
     status: $('e_status').value.trim()
   };
+
+  if (!payload.marketer) {
+    showBanner(banner, "Select a marketer's name.", 'error');
+    return;
+  }
 
   try {
     const res = await Api.call('editEntry', payload);
