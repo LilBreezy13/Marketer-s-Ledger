@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marketer's Ledger — Payment Entry</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: { DEFAULT: '#20124D', light: '#3A2470', 50: '#EFEAF9' },
+          ink: '#1C1730',
+          border: '#E2E1EA',
+          muted: '#6B6580',
+          success: { DEFAULT: '#1E7E42', bg: '#E8F7EE' },
+          danger:  { DEFAULT: '#C0392B', bg: '#FDECEA' },
+          amber:   { DEFAULT: '#B45309', bg: '#FDF3E7' }
+        },
+        fontFamily: {
+          sans: ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Sora', 'Inter', 'system-ui', 'sans-serif']
+        }
+      }
+    }
+  };
+</script>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body class="min-h-screen">
+
+  <!-- ============================= LOGIN ============================= -->
+  <div id="view-login" class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-sm rise-in">
+      <div class="text-center mb-8">
+        <div class="mx-auto mb-4 w-12 h-12 rounded-xl bg-brand flex items-center justify-center text-white font-display font-semibold text-lg">ML</div>
+        <h1 class="font-display text-xl font-semibold">Marketer's Ledger</h1>
+        <p class="text-sm text-muted mt-1">Sign in to record payment to Cash Books</p>
+      </div>
+
+      <form id="loginForm" class="bg-white border border-border rounded-2xl p-6 space-y-4 shadow-sm">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5" for="loginUsername">Username</label>
+          <input id="loginUsername" type="text" autocomplete="username" required
+            class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand focus:ring-0">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5" for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" autocomplete="current-password" required
+            class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand focus:ring-0">
+        </div>
+
+        <div id="loginBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+
+        <button id="loginBtn" type="submit"
+          class="w-full py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light transition-colors">
+          Sign in
+        </button>
+      </form>
+      <p class="text-center text-xs text-muted mt-5">First time here? Ask an admin to create your account.</p>
+    </div>
+  </div>
+
+  <!-- ============================= APP SHELL ============================= -->
+  <div id="view-app" class="hidden min-h-screen pb-20 md:pb-0">
+
+    <!-- top bar -->
+    <header class="sticky top-0 z-30 bg-white border-b border-border">
+      <div class="max-w-6xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-brand flex items-center justify-center text-white font-display font-semibold text-sm">ML</div>
+          <span class="font-display font-semibold hidden sm:inline">Marketer's Ledger</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="text-right hidden sm:block">
+            <div class="text-sm font-medium leading-tight" id="topbarName">—</div>
+            <div class="text-xs text-muted leading-tight capitalize" id="topbarRole">—</div>
+          </div>
+          <button id="changePwBtn" title="Change password"
+            class="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted hover:text-brand hover:border-brand transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </button>
+          <button id="logoutBtn" title="Log out"
+            class="w-9 h-9 rounded-lg border border-border flex items-center justify-center text-muted hover:text-danger hover:border-danger transition-colors">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto md:px-6 md:py-6 md:flex md:gap-6">
+
+      <!-- desktop side nav -->
+      <nav class="hidden md:block w-48 shrink-0">
+        <div class="space-y-1 sticky top-24">
+          <button data-tab="entry" class="navbtn w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            New entry
+          </button>
+          <button data-tab="history" class="navbtn w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+            History
+          </button>
+          <button data-tab="admin" id="navAdmin" class="navbtn hidden w-full text-left px-3.5 py-2.5 rounded-lg text-sm font-medium flex items-center gap-2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Secretaries
+          </button>
+        </div>
+      </nav>
+
+      <!-- main content -->
+      <main class="flex-1 px-4 py-5 md:px-0 md:py-0 max-w-2xl md:max-w-none">
+
+        <!-- ---------- ENTRY PANEL ---------- -->
+        <section id="panel-entry" class="panel">
+          <div class="mb-5">
+            <h1 class="font-display text-lg font-semibold">New payment entry</h1>
+            <p class="text-sm text-muted mt-0.5">Submitted directly to the selected marketer's ledger sheet.</p>
+          </div>
+
+          <form id="entryForm" class="bg-white border border-border rounded-2xl p-5 md:p-6 space-y-4 shadow-sm max-w-xl">
+
+            <div class="flex items-center justify-between bg-brand-50 text-brand rounded-lg px-3.5 py-2.5 text-sm">
+              <span>Logged in as</span>
+              <span class="font-semibold" id="entryAgentName">—</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Date <span class="text-danger">*</span></label>
+                <input id="f_date" type="date" required class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Source <span class="text-danger">*</span></label>
+                <div class="dropdown-wrap">
+                  <input id="f_source" type="text" autocomplete="off" placeholder="Type or select..." required
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                  <div class="dropdown-list" id="f_source_list"></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Marketer's name <span class="text-danger">*</span></label>
+              <div class="dropdown-wrap">
+                <input id="f_marketer" type="text" autocomplete="off" placeholder="Select marketer..." required
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                <div class="dropdown-list" id="f_marketer_list"></div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">School name <span class="text-danger">*</span></label>
+              <div class="dropdown-wrap">
+                <input id="f_school" type="text" autocomplete="off" placeholder="Select a marketer first..." required
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                <div class="dropdown-list" id="f_school_list"></div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Sender / merchant <span class="text-danger">*</span></label>
+              <input id="f_sender" type="text" placeholder="Enter sender or merchant name"
+                class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Amount <span class="text-danger">*</span></label>
+                <div class="flex items-center rounded-lg border border-border overflow-hidden focus-within:border-brand">
+                  <span class="px-3 py-2.5 text-xs font-bold text-muted bg-gray-50 border-r border-border">GHS</span>
+                  <input id="f_amount" type="number" min="0" step="0.01" placeholder="0.00"
+                    class="flex-1 min-w-0 px-3 py-2.5 text-sm border-0 focus:ring-0 tnum">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Status</label>
+                <div class="dropdown-wrap">
+                  <input id="f_status" type="text" autocomplete="off" placeholder="Optional"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                  <div class="dropdown-list" id="f_status_list"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="entryBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+            <p class="text-xs text-muted text-center" id="entrySessionCount"></p>
+
+            <div class="flex gap-3 pt-1">
+              <button type="button" id="entryResetBtn" class="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold text-ink hover:bg-gray-50 transition-colors">Clear</button>
+              <button type="submit" id="entrySubmitBtn" class="flex-1 py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light transition-colors">Submit entry</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ---------- HISTORY PANEL ---------- -->
+        <section id="panel-history" class="panel hidden">
+          <div class="mb-5 flex items-start justify-between gap-3 flex-wrap">
+            <div>
+              <h1 class="font-display text-lg font-semibold">Payment history</h1>
+              <p class="text-sm text-muted mt-0.5">Entries you've submitted.</p>
+            </div>
+          </div>
+
+          <div class="bg-white border border-border rounded-2xl p-4 mb-4 shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Marketer</label>
+                <div class="dropdown-wrap">
+                  <input id="h_marketer" type="text" autocomplete="off" placeholder="All marketers"
+                    class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                  <div class="dropdown-list" id="h_marketer_list"></div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">From</label>
+                <input id="h_from" type="date" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">To</label>
+                <input id="h_to" type="date" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+            </div>
+            <button id="h_search" class="mt-3 w-full sm:w-auto px-5 py-2 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light transition-colors">Search</button>
+          </div>
+
+          <div id="historyList" class="space-y-2.5"></div>
+          <p id="historyEmpty" class="hidden text-center text-sm text-muted py-10">No entries match these filters.</p>
+        </section>
+
+        <!-- ---------- ADMIN PANEL ---------- -->
+        <section id="panel-admin" class="panel hidden">
+          <div class="mb-5">
+            <h1 class="font-display text-lg font-semibold">Secretaries</h1>
+            <p class="text-sm text-muted mt-0.5">Add a new login any time — no redeployment needed.</p>
+          </div>
+
+          <form id="addSecForm" class="bg-white border border-border rounded-2xl p-5 space-y-4 shadow-sm max-w-lg mb-6">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Username</label>
+                <input id="s_username" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Full name</label>
+                <input id="s_fullname" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Temporary password</label>
+                <input id="s_password" type="text" placeholder="min. 8 characters" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Role</label>
+                <select id="s_role" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand bg-white">
+                  <option value="secretary">Secretary</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            </div>
+            <div id="adminBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+            <button type="submit" class="px-5 py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light transition-colors">Create account</button>
+          </form>
+
+          <div id="secretariesList" class="space-y-2"></div>
+        </section>
+
+      </main>
+    </div>
+
+    <!-- mobile bottom tab bar -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-border flex z-30">
+      <button data-tab="entry" class="navbtn-mobile flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Entry
+      </button>
+      <button data-tab="history" class="navbtn-mobile flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        History
+      </button>
+      <button data-tab="admin" id="navAdminMobile" class="navbtn-mobile hidden flex-1 py-3 flex flex-col items-center gap-1 text-xs font-medium">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        Team
+      </button>
+    </nav>
+  </div>
+
+  <!-- ============================= EDIT MODAL ============================= -->
+  <div id="editModal" class="hidden fixed inset-0 z-50 bg-ink/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl p-5 md:p-6 max-h-[90vh] overflow-y-auto rise-in">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-base font-semibold">Edit entry</h2>
+        <button id="editCloseBtn" class="text-muted hover:text-ink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="editForm" class="space-y-4">
+        <input type="hidden" id="e_marketer">
+        <input type="hidden" id="e_rowRef">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Date</label>
+            <input id="e_date" type="date" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Source</label>
+            <input id="e_source" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">School name</label>
+          <input id="e_school" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Sender / merchant</label>
+          <input id="e_sender" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Amount</label>
+            <div class="flex items-center rounded-lg border border-border overflow-hidden focus-within:border-brand">
+              <span class="px-3 py-2.5 text-xs font-bold text-muted bg-gray-50 border-r border-border">GHS</span>
+              <input id="e_amount" type="number" min="0" step="0.01" class="flex-1 min-w-0 px-3 py-2.5 text-sm border-0 focus:ring-0 tnum">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Status</label>
+            <input id="e_status" type="text" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+          </div>
+        </div>
+        <div id="editBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+        <div class="flex gap-3 pt-1">
+          <button type="button" id="editCancelBtn" class="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold hover:bg-gray-50">Cancel</button>
+          <button type="submit" class="flex-1 py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light">Save changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================= CHANGE PASSWORD MODAL ============================= -->
+  <div id="pwModal" class="hidden fixed inset-0 z-50 bg-ink/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl p-5 md:p-6 rise-in">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-base font-semibold">Change password</h2>
+        <button id="pwCloseBtn" class="text-muted hover:text-ink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="pwForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Current password</label>
+          <input id="pw_old" type="password" autocomplete="current-password" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">New password</label>
+          <input id="pw_new" type="password" autocomplete="new-password" placeholder="min. 8 characters" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+        </div>
+        <div id="pwBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+        <button type="submit" class="w-full py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light">Update password</button>
+      </form>
+      <p class="text-xs text-muted mt-3">Forgotten your current password? Ask an admin to reset it for you.</p>
+    </div>
+  </div>
+
+  <!-- ============================= ADMIN RESET PASSWORD MODAL ============================= -->
+  <div id="resetPwModal" class="hidden fixed inset-0 z-50 bg-ink/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl p-5 md:p-6 rise-in">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-base font-semibold">Reset password</h2>
+        <button id="resetPwCloseBtn" class="text-muted hover:text-ink">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <form id="resetPwForm" class="space-y-4">
+        <input type="hidden" id="rp_username">
+        <p class="text-sm text-muted">Setting a new temporary password for <span class="font-semibold text-ink" id="rp_fullname"></span>. Share it with them securely — they can change it themselves afterwards.</p>
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">New temporary password</label>
+          <input id="rp_new" type="text" placeholder="min. 8 characters" class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+        </div>
+        <div id="resetPwBanner" class="hidden text-sm rounded-lg px-3.5 py-2.5"></div>
+        <button type="submit" class="w-full py-2.5 rounded-lg bg-brand text-white text-sm font-semibold hover:bg-brand-light">Set new password</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/api.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

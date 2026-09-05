@@ -1,0 +1,67 @@
+:root {
+  --brand: #20124D;
+  --brand-light: #3A2470;
+  --ink: #1C1730;
+}
+
+html, body { height: 100%; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: #F7F6FB;
+  color: var(--ink);
+}
+h1, h2, h3, .font-display {
+  font-family: 'Sora', 'Inter', system-ui, sans-serif;
+}
+
+/* tabular figures for money, so amounts line up in lists */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* searchable dropdown, matches the original Apps Script dialog pattern */
+.dropdown-wrap { position: relative; }
+.dropdown-list {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #E2E1EA;
+  border-radius: 10px;
+  max-height: 220px;
+  overflow-y: auto;
+  box-shadow: 0 12px 28px rgba(28,23,48,0.14);
+  z-index: 40;
+}
+.dropdown-list.open { display: block; }
+.dropdown-item {
+  padding: 10px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--ink);
+}
+.dropdown-item:hover, .dropdown-item.active { background: #EFEAF9; }
+.dropdown-empty { padding: 10px 14px; font-size: 12.5px; color: #918C9E; }
+.dropdown-list::-webkit-scrollbar { width: 8px; }
+.dropdown-list::-webkit-scrollbar-thumb { background: #DCD8E8; border-radius: 4px; }
+
+/* simple fade-slide for the one page-load moment, used once on login success */
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise-in { animation: rise-in .28s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in { animation: none; }
+}
+
+/* visible keyboard focus everywhere */
+a:focus-visible, button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #DCD8E8; border-radius: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
