@@ -162,9 +162,31 @@ function setActiveTab(tab) {
   if (tab === 'admin') loadSecretaries();
 }
 document.querySelectorAll('.navbtn, .navbtn-mobile').forEach(b => {
-  b.addEventListener('click', () => setActiveTab(b.dataset.tab));
+  b.addEventListener('click', () => {
+    setActiveTab(b.dataset.tab);
+    if (b.classList.contains('navbtn-mobile')) closeMobileMenu();
+  });
 });
 
+// -----------------------------------------------------------------------
+// Mobile hamburger menu
+// -----------------------------------------------------------------------
+function openMobileMenu() {
+  $('mobileMenu').classList.remove('hidden');
+  $('mobileMenuIconOpen').classList.add('hidden');
+  $('mobileMenuIconClose').classList.remove('hidden');
+  $('mobileMenuBtn').setAttribute('aria-expanded', 'true');
+}
+function closeMobileMenu() {
+  $('mobileMenu').classList.add('hidden');
+  $('mobileMenuIconOpen').classList.remove('hidden');
+  $('mobileMenuIconClose').classList.add('hidden');
+  $('mobileMenuBtn').setAttribute('aria-expanded', 'false');
+}
+$('mobileMenuBtn').addEventListener('click', () => {
+  $('mobileMenu').classList.contains('hidden') ? openMobileMenu() : closeMobileMenu();
+});
+$('mobileMenuBackdrop').addEventListener('click', closeMobileMenu);
 async function enterApp() {
   const user = Api.currentUser();
   if (!user) { showLogin(); return; }
