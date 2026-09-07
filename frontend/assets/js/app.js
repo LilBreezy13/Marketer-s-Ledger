@@ -1,8 +1,9 @@
 // -----------------------------------------------------------------------
 // App state
 // -----------------------------------------------------------------------
+
 let STATE = {
-  sources: [], statuses: [], marketers: [],
+  sources: [], statuses: [], marketers: [], agents: [],
   sessionCount: 0
 };
 
@@ -194,9 +195,11 @@ async function enterApp() {
   $('view-login').classList.add('hidden');
   $('view-app').classList.remove('hidden');
   $('view-app').classList.add('rise-in');
+
   $('topbarName').textContent = user.fullName;
   $('topbarRole').textContent = user.role;
   $('entryAgentName').textContent = user.fullName;
+  $('f_agent').value = user.fullName; 
 
   const isAdmin = user.role === 'admin';
   $('navAdmin').classList.toggle('hidden', !isAdmin);
@@ -211,11 +214,13 @@ async function enterApp() {
 // -----------------------------------------------------------------------
 async function loadInitData() {
   try {
+  
     const res = await Api.call('initData');
     if (!res.ok) { showBanner($('entryBanner'), res.error, 'error'); return; }
     STATE.sources = res.sources || [];
     STATE.statuses = res.statuses || [];
     STATE.marketers = res.marketers || [];
+    STATE.agents = res.agents || [];
     $('f_date').value = res.todayISO;
   } catch (err) {
     showBanner($('entryBanner'), err.message, 'error');
@@ -236,6 +241,8 @@ async function loadSchoolsForMarketer(marketer) {
   schoolInput.placeholder = 'Select or type a school name...';
 }
 
+// NEW
+setupDropdown($('f_agent'), $('f_agent_list'), () => STATE.agents);
 setupDropdown($('f_source'), $('f_source_list'), () => STATE.sources);
 setupDropdown($('f_status'), $('f_status_list'), () => STATE.statuses);
 setupDropdown($('f_school'), $('f_school_list'), () => SCHOOLS);
@@ -260,8 +267,10 @@ $('entryForm').addEventListener('submit', async (e) => {
   const banner = $('entryBanner');
   hideBanner(banner);
 
+  // NEW
   const payload = {
     date: $('f_date').value,
+    agent: $('f_agent').value.trim(),
     source: $('f_source').value.trim(),
     marketer: $('f_marketer').value.trim(),
     school: $('f_school').value.trim(),
@@ -272,6 +281,7 @@ $('entryForm').addEventListener('submit', async (e) => {
 
   const missing = [];
   if (!payload.date) missing.push('Date');
+  if (!payload.agent) missing.push('Payment Entry Agent');
   if (!payload.source) missing.push('Source');
   if (!payload.marketer) missing.push("Marketer's Name");
   if (!payload.school) missing.push('School Name');
@@ -302,8 +312,10 @@ $('entryForm').addEventListener('submit', async (e) => {
 // History panel
 // -----------------------------------------------------------------------
 
+// NEW
 setupDropdown($('h_marketer'), $('h_marketer_list'), () => ['ALL', ...STATE.marketers]);
 setupDropdown($('e_marketer'), $('e_marketer_list'), () => STATE.marketers);
+setupDropdown($('e_agent'), $('e_agent_list'), () => STATE.agents);
 
 $('h_search').addEventListener('click', loadHistory);
 
@@ -367,9 +379,11 @@ function escapeHtml(str) {
 // Edit modal
 // -----------------------------------------------------------------------
 
+// NEW
 function openEditModal(r) {
   $('e_currentMarketer').value = r.marketer;
   $('e_marketer').value = r.marketer;
+  $('e_agent').value = r.agent || '';
   $('e_rowRef').value = r.rowRef;
   $('e_date').value = r.date;
   $('e_source').value = r.source || '';
@@ -388,9 +402,11 @@ $('editForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const banner = $('editBanner');
   hideBanner(banner);
+ // NEW
   const payload = {
     currentMarketer: $('e_currentMarketer').value,
     marketer: $('e_marketer').value.trim(),
+    agent: $('e_agent').value.trim(),
     rowRef: $('e_rowRef').value,
     date: $('e_date').value,
     source: $('e_source').value.trim(),

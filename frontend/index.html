@@ -130,9 +130,19 @@
 
           <form id="entryForm" class="bg-white border border-border rounded-2xl p-5 md:p-6 space-y-4 shadow-sm max-w-xl">
 
+         
             <div class="flex items-center justify-between bg-brand-50 text-brand rounded-lg px-3.5 py-2.5 text-sm">
               <span>Logged in as</span>
               <span class="font-semibold" id="entryAgentName">—</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Payment Entry Agent <span class="text-danger">*</span></label>
+              <div class="dropdown-wrap">
+                <input id="f_agent" type="text" autocomplete="off" placeholder="Select your name..." required
+                  class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+                <div class="dropdown-list" id="f_agent_list"></div>
+              </div>
             </div>
 
         
@@ -309,15 +319,24 @@
         </button>
       </div>
     
+
 <form id="editForm" class="space-y-4">
   <input type="hidden" id="e_currentMarketer">
   <input type="hidden" id="e_rowRef">
   <div>
     <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Marketer's name</label>
     <div class="dropdown-wrap">
-      <input id="e_marketer" type="text" autocomplete="off" placeholder="Select marketer..."
-        class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+      <input id="e_marketer" type="text" autocomplete="off" placeholder="Select marketer..." readonly
+        class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm bg-gray-50 text-muted">
       <div class="dropdown-list" id="e_marketer_list"></div>
+    </div>
+  </div>
+  <div>
+    <label class="block text-xs font-semibold uppercase tracking-wide text-muted mb-1.5">Payment Entry Agent</label>
+    <div class="dropdown-wrap">
+      <input id="e_agent" type="text" autocomplete="off" placeholder="Select agent..."
+        class="w-full px-3.5 py-2.5 rounded-lg border border-border text-sm focus:border-brand">
+      <div class="dropdown-list" id="e_agent_list"></div>
     </div>
   </div>
         <div class="grid grid-cols-2 gap-3">
