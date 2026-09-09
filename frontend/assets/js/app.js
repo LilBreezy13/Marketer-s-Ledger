@@ -458,17 +458,28 @@ async function loadSecretaries() {
           </div>
           <div class="text-xs text-muted mt-1">@${escapeHtml(s.username)} &middot; added ${escapeHtml(s.createdAt)}</div>
         </div>
-        <div class="flex items-center gap-3 shrink-0">
+            <div class="flex items-center gap-3 shrink-0">
           <button class="reset-btn text-xs font-semibold text-brand hover:text-brand-light">Reset password</button>
           <button class="toggle-btn text-xs font-semibold ${s.active ? 'text-danger' : 'text-success'}">
             ${s.active ? 'Deactivate' : 'Reactivate'}
           </button>
+          ${s.active ? '' : '<button class="delete-btn text-xs font-semibold text-danger hover:text-danger">Delete</button>'}
         </div>`;
       row.querySelector('.reset-btn').addEventListener('click', () => openResetPwModal(s));
       row.querySelector('.toggle-btn').addEventListener('click', async () => {
         await Api.call(s.active ? 'deactivateSecretary' : 'reactivateSecretary', { username: s.username });
         loadSecretaries();
       });
+      const delBtn = row.querySelector('.delete-btn');
+      if (delBtn) {
+        delBtn.addEventListener('click', async () => {
+          const sure = confirm(`Permanently delete "${s.fullName}" (@${s.username})? This cannot be undone.`);
+          if (!sure) return;
+          const res = await Api.call('deleteSecretary', { username: s.username });
+          if (!res.ok) { alert(res.error || 'Could not delete account.'); return; }
+          loadSecretaries();
+        });
+      }
       list.appendChild(row);
     });
   } catch (err) {
