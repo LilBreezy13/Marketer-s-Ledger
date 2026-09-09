@@ -316,6 +316,7 @@ $('entryForm').addEventListener('submit', async (e) => {
 setupDropdown($('h_marketer'), $('h_marketer_list'), () => ['ALL', ...STATE.marketers]);
 setupDropdown($('e_marketer'), $('e_marketer_list'), () => STATE.marketers);
 setupDropdown($('e_agent'), $('e_agent_list'), () => STATE.agents);
+setupDropdown($('e_status'), $('e_status_list'), () => STATE.statuses);
 
 $('h_search').addEventListener('click', loadHistory);
 
