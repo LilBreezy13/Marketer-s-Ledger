@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------
 
 let STATE = {
-  sources: [], exams: [], marketers: [],
+  sources: [], exams: [], legacyStatuses: [], marketers: [],
   sessionCount: 0
 };
 
@@ -218,6 +218,7 @@ async function loadInitData() {
     if (!res.ok) { showBanner($('entryBanner'), res.error, 'error'); return; }
     STATE.sources = res.sources || [];
     STATE.exams = res.exams || [];
+    STATE.legacyStatuses = res.legacyStatuses || [];
     STATE.marketers = res.marketers || [];
     $('f_date').value = res.todayISO;
     if (STATE.exams.length === 0) {
@@ -226,6 +227,24 @@ async function loadInitData() {
   } catch (err) {
     showBanner($('entryBanner'), err.message, 'error');
   }
+}
+
+// The order used in EVERY exam dropdown (new entry + edit):
+//   1. the current exam, 2. previous exams (both set in config.js), 3. any other active exam,
+//   4. "Wrong Entry", 5. the old plain-text statuses (July-2026, April-2026, ...).
+function examOptions() {
+  const out = [];
+  const seen = {};
+  function add(v) {
+    const k = String(v || '').toLowerCase();
+    if (k && !seen[k]) { seen[k] = true; out.push(v); }
+  }
+  const pinned = [CONFIG.CURRENT_EXAM].concat(CONFIG.PREVIOUS_EXAMS || []);
+  pinned.filter(p => STATE.exams.includes(p)).forEach(add);   // only pinned codes that are real, active exams
+  STATE.exams.forEach(add);                                   // any other active exam from the Directory
+  add('Wrong Entry');
+  (STATE.legacyStatuses || []).forEach(add);                  // old plain-text statuses, in SETTING order
+  return out;
 }
 
 let SCHOOLS = [];
@@ -256,7 +275,7 @@ function refreshSchools() {
   loadSchools(marketer, exam);
 }
 
-setupDropdown($('f_exam'), $('f_exam_list'), () => STATE.exams, { onSelect: refreshSchools });
+setupDropdown($('f_exam'), $('f_exam_list'), () => examOptions(), { onSelect: refreshSchools });
 setupDropdown($('f_source'), $('f_source_list'), () => STATE.sources);
 setupDropdown($('f_school'), $('f_school_list'), () => SCHOOLS);
 setupDropdown($('f_marketer'), $('f_marketer_list'), () => STATE.marketers, { onSelect: refreshSchools });
@@ -300,7 +319,7 @@ $('entryForm').addEventListener('submit', async (e) => {
   if (!payload.sender) missing.push('Sender/Merchant');
   if (!payload.amount || Number(payload.amount) <= 0) missing.push('Amount');
   if (missing.length) { showBanner(banner, 'Missing required field(s): ' + missing.join(', '), 'error'); return; }
-  if (!STATE.exams.includes(payload.exam)) {
+  if (!examOptions().includes(payload.exam)) {
     showBanner(banner, 'Please choose the exam from the dropdown list.', 'error');
     return;
   }
@@ -331,7 +350,7 @@ $('entryForm').addEventListener('submit', async (e) => {
 // NEW
 setupDropdown($('h_marketer'), $('h_marketer_list'), () => ['ALL', ...STATE.marketers]);
 setupDropdown($('e_marketer'), $('e_marketer_list'), () => STATE.marketers);
-setupDropdown($('e_status'), $('e_status_list'), () => ['Wrong Entry', ...STATE.exams]);
+setupDropdown($('e_status'), $('e_status_list'), () => examOptions());
 
 $('h_search').addEventListener('click', loadHistory);
 
