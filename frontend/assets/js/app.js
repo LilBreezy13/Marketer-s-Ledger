@@ -3,7 +3,7 @@
 // -----------------------------------------------------------------------
 
 let STATE = {
-  sources: [], statuses: [], marketers: [], agents: [],
+  sources: [], exams: [], marketers: [],
   sessionCount: 0
 };
 
@@ -199,7 +199,6 @@ async function enterApp() {
   $('topbarName').textContent = user.fullName;
   $('topbarRole').textContent = user.role;
   $('entryAgentName').textContent = user.fullName;
-  $('f_agent').value = user.fullName; 
 
   const isAdmin = user.role === 'admin';
   $('navAdmin').classList.toggle('hidden', !isAdmin);
@@ -218,22 +217,27 @@ async function loadInitData() {
     const res = await Api.call('initData');
     if (!res.ok) { showBanner($('entryBanner'), res.error, 'error'); return; }
     STATE.sources = res.sources || [];
-    STATE.statuses = res.statuses || [];
+    STATE.exams = res.exams || [];
     STATE.marketers = res.marketers || [];
-    STATE.agents = res.agents || [];
     $('f_date').value = res.todayISO;
+    if (STATE.exams.length === 0) {
+      showBanner($('entryBanner'), 'No active exams were found. Ask an admin to check the Exam Directory before submitting.', 'error');
+    }
   } catch (err) {
     showBanner($('entryBanner'), err.message, 'error');
   }
 }
 
 let SCHOOLS = [];
-async function loadSchoolsForMarketer(marketer) {
+let schoolsKey = '';   // which "exam|marketer" the SCHOOLS list was loaded for
+
+async function loadSchools(marketer, exam) {
   const schoolInput = $('f_school');
+  if (!exam) { SCHOOLS = []; schoolInput.placeholder = 'Select an exam first...'; return; }
   if (!marketer) { SCHOOLS = []; schoolInput.placeholder = 'Select a marketer first...'; return; }
   schoolInput.placeholder = 'Loading schools...';
   try {
-    const res = await Api.call('schools', { marketer });
+    const res = await Api.call('schools', { marketer, exam });
     SCHOOLS = res.ok ? (res.schools || []) : [];
   } catch (err) {
     SCHOOLS = [];
@@ -241,25 +245,34 @@ async function loadSchoolsForMarketer(marketer) {
   schoolInput.placeholder = 'Select or type a school name...';
 }
 
-// NEW
-setupDropdown($('f_agent'), $('f_agent_list'), () => STATE.agents);
+// Reload the school list whenever the exam or marketer actually changes.
+function refreshSchools() {
+  const marketer = $('f_marketer').value.trim();
+  const exam = $('f_exam').value.trim();
+  const key = exam + '|' + marketer;
+  if (key === schoolsKey) return;      // nothing changed - keep the school already picked
+  schoolsKey = key;
+  $('f_school').value = '';
+  loadSchools(marketer, exam);
+}
+
+setupDropdown($('f_exam'), $('f_exam_list'), () => STATE.exams, { onSelect: refreshSchools });
 setupDropdown($('f_source'), $('f_source_list'), () => STATE.sources);
-setupDropdown($('f_status'), $('f_status_list'), () => STATE.statuses);
 setupDropdown($('f_school'), $('f_school_list'), () => SCHOOLS);
-setupDropdown($('f_marketer'), $('f_marketer_list'), () => STATE.marketers, {
-  onSelect: (v) => { $('f_school').value = ''; loadSchoolsForMarketer(v); }
-});
+setupDropdown($('f_marketer'), $('f_marketer_list'), () => STATE.marketers, { onSelect: refreshSchools });
 
 function resetPerEntryFields() {
+  // Exam, marketer, source and date stay selected so a batch of entries is quick.
   $('f_school').value = '';
   $('f_sender').value = '';
   $('f_amount').value = '';
-  $('f_status').value = '';
   $('f_sender').focus();
 }
 $('entryResetBtn').addEventListener('click', () => {
   $('f_school').value = ''; $('f_sender').value = ''; $('f_amount').value = '';
-  $('f_status').value = ''; $('f_marketer').value = '';
+  $('f_exam').value = ''; $('f_marketer').value = '';
+  schoolsKey = ''; SCHOOLS = [];
+  $('f_school').placeholder = 'Select an exam first...';
 });
 
 $('entryForm').addEventListener('submit', async (e) => {
@@ -267,27 +280,30 @@ $('entryForm').addEventListener('submit', async (e) => {
   const banner = $('entryBanner');
   hideBanner(banner);
 
-  // NEW
+  // The agent is not sent: the server always records the logged-in account's name.
   const payload = {
+    exam: $('f_exam').value.trim(),
     date: $('f_date').value,
-    agent: $('f_agent').value.trim(),
     source: $('f_source').value.trim(),
     marketer: $('f_marketer').value.trim(),
     school: $('f_school').value.trim(),
     sender: $('f_sender').value.trim(),
-    amount: $('f_amount').value,
-    status: $('f_status').value.trim()
+    amount: $('f_amount').value
   };
 
   const missing = [];
+  if (!payload.exam) missing.push('Exam');
   if (!payload.date) missing.push('Date');
-  if (!payload.agent) missing.push('Payment Entry Agent');
   if (!payload.source) missing.push('Source');
   if (!payload.marketer) missing.push("Marketer's Name");
   if (!payload.school) missing.push('School Name');
   if (!payload.sender) missing.push('Sender/Merchant');
   if (!payload.amount || Number(payload.amount) <= 0) missing.push('Amount');
   if (missing.length) { showBanner(banner, 'Missing required field(s): ' + missing.join(', '), 'error'); return; }
+  if (!STATE.exams.includes(payload.exam)) {
+    showBanner(banner, 'Please choose the exam from the dropdown list.', 'error');
+    return;
+  }
 
   const btn = $('entrySubmitBtn');
   btn.disabled = true; btn.textContent = 'Submitting...';
@@ -315,8 +331,7 @@ $('entryForm').addEventListener('submit', async (e) => {
 // NEW
 setupDropdown($('h_marketer'), $('h_marketer_list'), () => ['ALL', ...STATE.marketers]);
 setupDropdown($('e_marketer'), $('e_marketer_list'), () => STATE.marketers);
-setupDropdown($('e_agent'), $('e_agent_list'), () => STATE.agents);
-setupDropdown($('e_status'), $('e_status_list'), () => STATE.statuses);
+setupDropdown($('e_status'), $('e_status_list'), () => ['Wrong Entry', ...STATE.exams]);
 
 $('h_search').addEventListener('click', loadHistory);
 
@@ -384,7 +399,6 @@ function escapeHtml(str) {
 function openEditModal(r) {
   $('e_currentMarketer').value = r.marketer;
   $('e_marketer').value = r.marketer;
-  $('e_agent').value = r.agent || '';
   $('e_rowRef').value = r.rowRef;
   $('e_date').value = r.date;
   $('e_source').value = r.source || '';
@@ -407,7 +421,6 @@ $('editForm').addEventListener('submit', async (e) => {
   const payload = {
     currentMarketer: $('e_currentMarketer').value,
     marketer: $('e_marketer').value.trim(),
-    agent: $('e_agent').value.trim(),
     rowRef: $('e_rowRef').value,
     date: $('e_date').value,
     source: $('e_source').value.trim(),
@@ -419,6 +432,10 @@ $('editForm').addEventListener('submit', async (e) => {
 
   if (!payload.marketer) {
     showBanner(banner, "Select a marketer's name.", 'error');
+    return;
+  }
+  if (!payload.status) {
+    showBanner(banner, 'Select an exam (or Wrong Entry).', 'error');
     return;
   }
 
