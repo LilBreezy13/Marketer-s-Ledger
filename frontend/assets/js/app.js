@@ -457,17 +457,20 @@ $('editForm').addEventListener('submit', async (e) => {
     showBanner(banner, 'Select an exam (or Wrong Entry).', 'error');
     return;
   }
-
+  const btn = $('editSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Saving...';
   try {
     const res = await Api.call('editEntry', payload);
     if (res.ok) {
-      closeEditModal();
-      loadHistory();
+      showBanner(banner, res.warning || 'Changes saved.', res.warning ? 'error' : 'success');
+      setTimeout(() => { closeEditModal(); loadHistory(); }, 500);
     } else {
       showBanner(banner, res.error || 'Could not save changes.', 'error');
     }
   } catch (err) {
     showBanner(banner, err.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Save changes';
   }
 });
 
